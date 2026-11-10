@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+  --bg: #ffffff;
+  --soft: #f3f6f5;
+  --ink: #001e2b;
+  --mute: #5d727b;
+  --line: #d3dcd9;
+  --tint: rgba(5, 150, 105, 0.1);
+  --acc: #059669;
+  --acc-ink: #ffffff;
+}
+.dark {
+  --bg: #001e2b;
+  --soft: #0d2431;
+  --ink: #e6ecea;
+  --mute: #8ba3ad;
+  --line: rgba(255, 255, 255, 0.1);
+  --tint: rgba(0, 237, 100, 0.1);
+  --acc: #00ed64;
+  --acc-ink: #001e2b;
+}
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+body {
+  font-family: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background-color: var(--bg);
+  color: var(--ink);
+}
+:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
