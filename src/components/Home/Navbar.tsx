@@ -1,9 +1,7 @@
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 
 export default function Navbar(){
-    const navigate = useNavigate()
     const [scrolled, setScrolled] = useState(false);
     const [dark, setDark] = useState(() => localStorage.theme ? localStorage.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches)
 
