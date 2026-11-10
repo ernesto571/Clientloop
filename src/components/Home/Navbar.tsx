@@ -39,7 +39,7 @@ export default function Navbar(){
                     <div className="flex items-center gap-2">
                         <button className="hidden sm:inline-flex px-2 text-sm font-semibold text-neutral-500 dark:text-neutral-400" >Client Login</button>
 
-                        <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-200 dark:border-white/10 px-3.5 py-2 text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-white/5 transition">Sign In</button>
+                        <button className="hidden sm:inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-200 dark:border-white/10 px-3.5 py-2 text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-white/5 transition">Sign In</button>
 
                         <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 text-white dark:bg-[#00ed64] dark:text-[#001e2b] px-3.5 py-2 text-sm font-semibold shadow-sm hover:bg-emerald-500 transition">Get Started</button>
 
