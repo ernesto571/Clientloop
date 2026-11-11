@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import AuthModal from "../AuthModal";
 
 export default function Navbar(){
     const [scrolled, setScrolled] = useState(false);
     const [dark, setDark] = useState(() => localStorage.theme ? localStorage.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches)
+    const [selectedAuthLabel, setSelectedAuthLabel] = useState("");
 
     useEffect (() => {
         const onScroll = () => {
@@ -37,11 +39,11 @@ export default function Navbar(){
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <button className="hidden sm:inline-flex px-2 text-sm font-semibold text-neutral-500 dark:text-neutral-400" >Client Login</button>
+                        <button className="hidden sm:inline-flex px-2 text-sm font-semibold text-neutral-500 dark:text-neutral-400" onClick={() => setSelectedAuthLabel("client-login")} >Client Login</button>
 
-                        <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-200 dark:border-white/10 px-3.5 py-2 text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-white/5 transition">Sign In</button>
+                        <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-200 dark:border-white/10 px-3.5 py-2 text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-white/5 transition" onClick={() => setSelectedAuthLabel("sign-in")} >Sign In</button>
 
-                        <button className="hidden sm:inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 text-white dark:bg-[#00ed64] dark:text-[#001e2b] px-3.5 py-2 text-sm font-semibold shadow-sm hover:bg-emerald-500 transition">Get Started</button>
+                        <button className="hidden sm:inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 text-white dark:bg-[#00ed64] dark:text-[#001e2b] px-3.5 py-2 text-sm font-semibold shadow-sm hover:bg-emerald-500 transition"  onClick={() => setSelectedAuthLabel("sign-up")}>Get Started</button>
 
                         <button onClick={handleToggle} aria-label="Toggle Theme" className="grid h-9 w-9 place-items-center rounded-full bg-tint transition active:scale-95">
                             <Moon className="h-4 w-4 dark:hidden" />
@@ -53,6 +55,12 @@ export default function Navbar(){
                 
             </nav>
             {scrolled && <div className="h-16"></div>}
+            { selectedAuthLabel && (
+                <AuthModal 
+                    onClose={() => setSelectedAuthLabel("")}
+                    label={selectedAuthLabel}
+                />
+            ) }
         </main>
 
     )
