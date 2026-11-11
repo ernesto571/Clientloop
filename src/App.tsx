@@ -2,6 +2,9 @@ import { Routes, Route, Navigate} from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Navbar from "./components/Home/Navbar";
 import HomePage from "./pages/Homepage";
+import { useEffect } from "react";
+import { supabase } from "./lib/supabase-client";
+import { useAuthStore } from "./store/AuthStore";
 
 // interface RouteProps {
 //   children: React.ReactNode;
@@ -59,6 +62,10 @@ function App() {
 //         authListener.subscription.unsubscribe();
 //     };
 // }, []);
+  useEffect(() => {
+      const { data } = supabase.auth.onAuthStateChange((_e, session) => useAuthStore.setState({ session }))
+      return () => data.subscription.unsubscribe()
+  }, [])
 
   return (
     <>
@@ -67,7 +74,7 @@ function App() {
       <main>
       <Routes>
        
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
         <Route path="/" element={<HomePage />} />
 
         {/* <Route path="/" element={<HomePage />} />
