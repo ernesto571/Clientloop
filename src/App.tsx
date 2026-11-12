@@ -1,3 +1,4 @@
+import React from "react";
 import { Routes, Route, Navigate} from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Navbar from "./components/Home/Navbar";
@@ -5,21 +6,23 @@ import HomePage from "./pages/Homepage";
 import { useEffect } from "react";
 import { supabase } from "./lib/supabase-client";
 import { useAuthStore } from "./store/AuthStore";
+import Overview from "./pages/freelancer/Overview";
+import Clients from "./pages/freelancer/Clients";
 
-// interface RouteProps {
-//   children: React.ReactNode;
-// }
+interface RouteProps {
+  children: React.ReactNode;
+}
 
-// const ProtectedRoute: React.FC<RouteProps> = ({ children }) => {
-//   const { session, isLoading } = useAuthStore();
+const ProtectedRoute: React.FC<RouteProps> = ({ children }) => {
+  const { session, isLoading } = useAuthStore();
 
-//   if (isLoading) return null;
-//   if (!session) {
-//       return <Navigate to="/login" replace />;
-//   }
+  if (isLoading) return null;
+  if (!session) {
+      return <Navigate to="/" replace />;
+  }
 
-//   return <>{children}</>;
-// };
+  return <>{children}</>;
+};
 
 function App() {
 
@@ -69,13 +72,13 @@ function App() {
 
   return (
     <>
-      <Navbar />
-
       <main>
       <Routes>
        
         {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/overview" element={<ProtectedRoute><Overview /></ProtectedRoute>} />
+        <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
 
         {/* <Route path="/" element={<HomePage />} />
         <Route path="/sign-up" element={<SignUp />} />

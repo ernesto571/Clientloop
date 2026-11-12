@@ -15,7 +15,7 @@ export default function AuthModal ( {label, onClose} : modalProps ) {
 
     const [ activeTab, setActiveTab ] = useState(label)
     const [showPassword, setShowPassword] = useState(false);
-    const { formData, session, login, signUp, setFormData, fetchSession, googleSignIn, isLoading, error } = useAuthStore()
+    const { formData, session, login, signUp, setFormData, fetchSession, googleSignIn, isLoading } = useAuthStore()
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ [e.target.name]: e.target.value });
@@ -24,6 +24,7 @@ export default function AuthModal ( {label, onClose} : modalProps ) {
     const handleSignup = async () => {
         if (!formData.name?.trim()) return toast.error("Name is required.");
         if (!formData.email?.trim()) return toast.error("Email is required.");
+        if (!/^\S+@\S+\.\S+$/.test(formData.email.trim())) return toast.error("Enter a valid email address.");
         if (!formData.password) return toast.error("Password is required.");
         if (formData.password.length < 6) return toast.error("Password must be at least 6 characters.");
         try {

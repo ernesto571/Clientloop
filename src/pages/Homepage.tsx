@@ -1,6 +1,7 @@
 import Compare from "../components/Home/Compare";
 import FAQ from "../components/Home/FAQ";
 import Hero from "../components/Home/Hero";
+import Navbar from "../components/Home/Navbar";
 import Pricing from "../components/Home/Pricing";
 import Product from "../components/Home/Product";
 
@@ -9,6 +10,8 @@ export default function HomePage (){
 
     return (
         <main>
+            <Navbar />
+
             <Hero />
             <Product />
             <Compare />

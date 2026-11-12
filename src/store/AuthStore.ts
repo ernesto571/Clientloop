@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     session: null,
 
     signUp: async (data) => {
-        set({isLoading: true})
+        set({isLoading: true, error: null })
 
         try {
             const { error } = await supabase.auth.signUp({
@@ -61,7 +61,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     },
 
     login: async (data) => {
-        set({isLoading: true})
+        set({isLoading: true , error: null})
 
         try {
             const { error } = await supabase.auth.signInWithPassword({
