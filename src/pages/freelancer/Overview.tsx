@@ -4,6 +4,7 @@ import Topbar from "../../components/freelancer/Topbar";
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import InviteClientModal from "../../components/freelancer/InviteClientModal";
+import NewProjectModal from "../../components/freelancer/NewProjectModal";
 
 const activity = [
     "Marketing Website Redesign → Draft",
@@ -41,7 +42,7 @@ export default function Overview () {
                         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                             <h2 className="text-2xl font-extrabold tracking-tight">Overview</h2>
                             <div className="flex gap-2">
-                                <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 text-white dark:bg-[#00ed64] dark:text-[#001e2b] px-3.5 py-2 text-sm font-semibold shadow-sm hover:bg-emerald-500 transition" ><Plus className="w-4 h-4" /> New Project</button>
+                                <button  onClick={ () => setModal("new-proj")} className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 text-white dark:bg-[#00ed64] dark:text-[#001e2b] px-3.5 py-2 text-sm font-semibold shadow-sm hover:bg-emerald-500 transition" ><Plus className="w-4 h-4" /> New Project</button>
                             </div>
                         </div>
 
@@ -146,6 +147,11 @@ export default function Overview () {
             </div>
             { modal === "invite" && (
                 <InviteClientModal 
+                    onClose={() => setModal("")}
+                />
+            ) }
+            { modal === "new-proj" && (
+                <NewProjectModal 
                     onClose={() => setModal("")}
                 />
             ) }

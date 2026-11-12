@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 const Clients = () => {
     const navigate = useNavigate()
   const [modal, setModal] = useState("");
-  const { fetchClients, clients } = useClientStore();
+  const { fetchClients, clients, resendInvite, isLoading } = useClientStore();
 
   const [activeCategory, setActiveCategory] = useState("All");
 
@@ -32,6 +32,7 @@ const Clients = () => {
     { label: "Active", length: active.length },
     { label: "Invited", length: invited.length },
   ];
+  
 
   useEffect(() => {
     fetchClients();
@@ -125,7 +126,7 @@ const Clients = () => {
                   <div className="flex gap-2 lg:justify-end" >
                     <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-200 dark:border-white/10 px-3.5 py-2 text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-white/5 transition" onClick={() => navigate("/projects")} >View Projects</button>
 
-                    <button className={` ${ c.status === "Invited" ? "inline-flex" : "hidden" } items-center justify-center gap-2 rounded-lg border border-neutral-200 dark:border-white/10 px-3.5 py-2 text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-white/5 transition `} >Resend Invite</button>
+                    <button disabled={isLoading} className={` ${ c.status === "Invited" ? "inline-flex" : "hidden" } items-center justify-center gap-2 rounded-lg border border-neutral-200 dark:border-white/10 px-3.5 py-2 text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-white/5 transition disabled:opacity-50 `} onClick={ () => resendInvite(c.id)}  >Resend Invite</button>
                   </div>
                 </div>
               ))}

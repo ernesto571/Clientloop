@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { supabase } from "../lib/supabase-client"
 import { useAuthStore } from "./AuthStore"
+import toast from "react-hot-toast";
 
 export interface Clients {
     id: string;
@@ -21,6 +22,7 @@ interface ClientStore {
     clientFormData: ClientFormData
     fetchClients: () => Promise<void>
     inviteClient : (data: ClientFormData) => Promise<void>
+    resendInvite: (clientId: string) => Promise<void>
     setFormData: (data: Partial<ClientFormData>) => void;
 
 }
@@ -58,27 +60,37 @@ export const useClientStore = create<ClientStore>((set, get) => ({
     },
 
     inviteClient: async (data) => {
-        set({isLoading: true, error: null})
-        const session = useAuthStore.getState().session
-        const userId = session?.user.id
-    
+        set({ isLoading: true, error: null })
         try {
-            const { error } = await supabase.from("clients").insert({
-                freelancer_id: userId,
-                name: data.name,
-                email: data.email
-            })
+            const { error } = await supabase.functions.invoke("invite-client", { body: { name: data.name, email: data.email } })
             if (error) {
-                const msg = error.code === "23505" ? "You've already invited a client with this email." : error.code === "42501" ? "You don't have permission to do that." : "Couldn't invite client. Please try again."
-                console.error("Failed to invite client:", error.message)
-                set({ error: msg })
+                const body = await (error as any).context?.json?.().catch(() => null)
+                set({ error: body?.error ?? "Couldn't invite client. Please try again." })
                 return
             }
+
             await get().fetchClients()
         } catch (err: any) {
             console.error("🔴 inviteClient : failed", err.message)
         } finally {
             set({ isLoading: false });
+        }
+    },
+
+    resendInvite: async (clientId) => {
+        set({ isLoading: true })
+        try {
+            const { error } = await supabase.functions.invoke("invite-client", { body: { clientId } })
+            if (error) {
+                const body = await (error as any).context?.json?.().catch(() => null)
+                toast.error(body?.error ?? "Couldn't resend the invite.")
+                return
+            }
+            toast.success("Invite resent.")
+        } catch (err: any) {
+            console.error("🔴 resendInvite : failed", err.message)
+        } finally {
+            set({ isLoading: false })
         }
     },
 
