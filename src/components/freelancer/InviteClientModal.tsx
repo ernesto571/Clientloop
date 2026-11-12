@@ -27,8 +27,8 @@ const InviteClientModal = ({ onClose }: modalProps) => {
         await inviteClient(clientFormData)
         const err = useClientStore.getState().error
         if (err) return toast.error(err)
+        onClose()
         navigate("/clients")
-
 
     } catch (err) {
         console.error("Error in handleInviteClient", err);

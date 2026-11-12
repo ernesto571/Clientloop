@@ -2,6 +2,13 @@ import { create } from "zustand"
 import { supabase } from "../lib/supabase-client"
 import { useAuthStore } from "./AuthStore"
 
+export interface Clients {
+    id: string;
+    name: string;
+    email: string;
+    status: string;
+}
+
 export interface ClientFormData {
     name: string;
     email: string
@@ -10,7 +17,9 @@ export interface ClientFormData {
 interface ClientStore {
     isLoading: boolean
     error: string | null;
+    clients: Clients[];
     clientFormData: ClientFormData
+    fetchClients: () => Promise<void>
     inviteClient : (data: ClientFormData) => Promise<void>
     setFormData: (data: Partial<ClientFormData>) => void;
 
@@ -21,10 +30,32 @@ const initialFormData: ClientFormData = {
     email: '',
 };
 
-export const useClientStore = create<ClientStore>((set) => ({
+export const useClientStore = create<ClientStore>((set, get) => ({
     isLoading: false,
+    clients: [],
     clientFormData: initialFormData, 
     error: null,
+
+    fetchClients: async () => {
+        set({isLoading: true})
+        const session = useAuthStore.getState().session
+        const userId = session?.user.id
+
+        try {
+            const {data, error }= await supabase.from("clients").select("*").eq("freelancer_id", userId).order("created_at", { ascending: false } )
+            if (error){
+                console.log("Error fetching clients from database", error.message)
+                set({isLoading: false})
+                return
+            }
+            set ({clients: data})
+        } catch (err: any) {
+            console.error("🔴 fetchClients : failed", err.message)
+        } finally {
+            set({ isLoading: false });
+        }
+
+    },
 
     inviteClient: async (data) => {
         set({isLoading: true, error: null})
@@ -43,6 +74,7 @@ export const useClientStore = create<ClientStore>((set) => ({
                 set({ error: msg })
                 return
             }
+            await get().fetchClients()
         } catch (err: any) {
             console.error("🔴 inviteClient : failed", err.message)
         } finally {
