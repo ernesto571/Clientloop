@@ -28,7 +28,7 @@ const NewProjectModal = ({ onClose }: modalProps) => {
             const err = useProjectStore.getState().error
             if (err) return toast.error(err)
             onClose()
-            navigate("/clients")
+            navigate("/projects")
         } catch (err) {
             console.error("Error in handleCreateProject", err);
         }
