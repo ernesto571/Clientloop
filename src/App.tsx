@@ -9,6 +9,7 @@ import { useAuthStore } from "./store/AuthStore";
 import Overview from "./pages/freelancer/Overview";
 import Clients from "./pages/freelancer/Clients";
 import Projects from "./pages/freelancer/Projects";
+import ProjectDetails from "./pages/freelancer/ProjectDetails";
 
 interface RouteProps {
   children: React.ReactNode;
@@ -81,6 +82,8 @@ function App() {
         <Route path="/overview" element={<ProtectedRoute><Overview /></ProtectedRoute>} />
         <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
         <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+        <Route path="/projects/:id" element={<ProjectDetails />} />
+
 
         {/* <Route path="/" element={<HomePage />} />
         <Route path="/sign-up" element={<SignUp />} />
