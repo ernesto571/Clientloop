@@ -42,6 +42,8 @@ interface ProjectStore {
     createProject : (data: FormData) => Promise<void>
     fetchMilestones: (id: string) => Promise<void>
     addMilestone : (data: MilestoneFormData, project_id: string)=> Promise<void>
+    editMilestone : (data: MilestoneFormData, milestone_id: string, project_id: string )=> Promise<void>
+    deleteMilestone: (id: string, project_id: string) => Promise<void>
     updateProjectStatus : (status: string , id: string | undefined) => Promise<void>
     updateMilestoneStatus: ( milestoone_id: string, project_id: string, status: boolean ) => Promise<void>
     setFormData: (data: Partial<FormData>) => void;
@@ -208,6 +210,51 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
                 title: ""
             } });
         }
+    },
+
+    editMilestone : async(data , milestoneId, project_id) => {
+        set({ milestoneLoading: true, error: null })
+
+        try {
+            const {error} = await supabase.from("milestones").update({
+                title: data.title
+            }).eq("id", milestoneId) 
+            if (error) {
+                console.error("Failed to edit miilestone", error.message)
+                set({error:error.message})
+                return
+            }
+
+            await get().fetchMilestones(project_id) 
+
+        } catch (err: any) {
+            console.error("🔴 editMilestone : failed", err.message)
+        } finally {
+            set({ milestoneLoading: false, milestoneFormData : {
+                title: ""
+            } });
+        }
+    },
+
+    deleteMilestone: async(id, project_id) => {
+        set({ milestoneLoading: true, error: null })
+
+        try {
+            const {error} = await supabase.from("milestones").delete().eq("id", id) 
+            if (error) {
+                console.error("Failed to delete miilestone", error.message)
+                set({error:error.message})
+                return
+            }
+
+            await get().fetchMilestones(project_id) 
+
+        } catch (err: any) {
+            console.error("🔴 deleteMilestone : failed", err.message)
+        } finally {
+            set({ milestoneLoading: false });
+        }
+
     },
 
 
