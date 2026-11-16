@@ -10,7 +10,10 @@ const Projects = () => {
 
     const navigate = useNavigate()
     const [ modal, setModal] = useState("")
-    const { projects, isLoading,  fetchProjects } = useProjectStore()
+    const { projects, milestones, isLoading,  fetchProjects, fetchMilestones } = useProjectStore()
+
+    const completedMilestones = milestones.filter((m) => m.is_completed).length;
+    const milestoneProgress = milestones.length > 0 ? Math.round((completedMilestones / milestones.length) * 100) : 0;
 
     const draft_projects = projects?.filter(
         (p) => p.status === "Draft"
@@ -33,8 +36,18 @@ const Projects = () => {
     };
 
     useEffect(() => {
-        fetchProjects()
-    }, [] )
+        const loadProjects = async () => {
+            await fetchProjects()
+    
+            const projects = useProjectStore.getState().projects
+    
+            await Promise.all(
+                projects.map((p) => fetchMilestones(p.id))
+            )
+        }
+    
+        loadProjects()
+    }, [])
 
     return (
         <main>
@@ -69,18 +82,28 @@ const Projects = () => {
                                             <div onClick={() => handleClick(p.id)}  key={p.id}  className="rounded-xl border border-neutral-200 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm p-5 w-full text-left block hover:border-neutral-400 dark:hover:border-white/30 transition hover:cursor-pointer ">
                                                 <p className="font-bold text-sm">{p.name} </p>
                                                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{p.client?.name} </p>
-                                                <div className="flex items-center gap-2 rounded-lg border border-dashed border-neutral-200 dark:border-white/10 px-3 py-2.5 mt-2">
-                                                    <span className="h-7 w-7 rounded-md bg-emerald-50 dark:bg-[#00ed64]/10 text-emerald-700 dark:text-[#00ed64] grid place-items-center">
-                                                        <ListTodo className="h-4 w-4" />
-                                                    </span>
+                                                { milestones.length == 0 && (
+                                                    <div className="flex items-center gap-2 rounded-lg border border-dashed border-neutral-200 dark:border-white/10 px-3 py-2.5 mt-2">
+                                                        <span className="h-7 w-7 rounded-md bg-emerald-50 dark:bg-[#00ed64]/10 text-emerald-700 dark:text-[#00ed64] grid place-items-center">
+                                                            <ListTodo className="h-4 w-4" />
+                                                        </span>
 
-                                                    <div>
-                                                        <p className="text-xs font-semibold">Milestones not started</p>
-                                                        <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                                                        Add steps from project details
-                                                        </p>
+                                                        <div>
+                                                            <p className="text-xs font-semibold">Milestones not started</p>
+                                                            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                                                            Add steps from project details
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                ) }
+                                                
+                                                { milestones.length > 0 && (
+                                                    <div className="h-1.5 rounded-full bg-neutral-200 dark:bg-white/10 overflow-hidden mt-3 mb-2"><div className="h-full bg-emerald-600 dark:bg-[#00ed64]" style={{width: `${milestoneProgress}%`}}></div></div>
+                                                ) }
+
+                                                { milestones.length > 0 && (
+                                                    <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400"><span>{completedMilestones} of {milestones.length} milestones</span><span className="font-semibold"> {milestoneProgress}%</span></div>
+                                                ) }
                                                 {/* <div class="h-1.5 rounded-full bg-neutral-200 dark:bg-white/10 overflow-hidden my-2"><div class="h-full bg-emerald-600 dark:bg-[#00ed64]" style="width:50%"></div></div><div class="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400"><span>2/4 milestones</span><span class="rounded-md px-2 py-0.5 text-xs font-semibold whitespace-nowrap bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300">Pending</span></div> */}
                                                 </div>
                                         ))
