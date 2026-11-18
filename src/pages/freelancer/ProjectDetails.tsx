@@ -4,7 +4,7 @@ import Sidebar from "../../components/freelancer/Sidebar"
 import Topbar from "../../components/freelancer/Topbar"
 import { useProjectStore } from "../../store/ProjectStore"
 import { useEffect, useRef, useState } from "react";
-import { Check, Download, FileText, ListTodo, MessageCircle, Milestone, Pencil, Plus, Send, Trash2, Upload } from "lucide-react";
+import { Check, FileText, ListTodo, MessageCircle, Milestone, Pencil, Plus, Send, Trash2, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 import UpdateMilestoneModal from "../../components/freelancer/UpdateMilestoneModal";
 import UploadDeliiverableModal from "../../components/freelancer/UploadDeliiverableModal";

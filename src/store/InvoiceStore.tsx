@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { useAuthStore } from "./AuthStore";
 import { supabase } from "../lib/supabase-client";
+import toast from "react-hot-toast";
 
 export interface LineItemFormData {
     id: string;          // only for React's key
@@ -44,6 +45,8 @@ interface InvoiceStore {
     fetchInvoices: () => Promise<void>
     saveAsDraft: (data:InvoiceFormData, project_id: string, total: number, clientId:string ) => Promise<void>
     createAndSend: (data:InvoiceFormData, project_id: string, total: number, clientId:string ) => Promise<void>
+    updateInvoiceStatus: (status: string, id: string ) => Promise<void>
+    deleteInvoice: (invoice_id: string) => Promise<void>;
     setInvoiceFormData: (data: Partial<InvoiceFormData>) => void;
     addLineItem: () => void;
     updateLineItem: (id: string, field: "description" | "price", value: string) => void;
@@ -207,6 +210,59 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
         }
     },
 
+    updateInvoiceStatus : async (status, id) => {
+        set({ invoiceLoading: true, error: null })
+        const session = useAuthStore.getState().session
+        const userId = session?.user.id
+
+        try {
+            const {error} = await supabase.from("invoices").update({
+                status : status,
+            }).eq("id", id).eq("freelancer_id", userId)
+            if (error) {
+                console.error("Failed to update invoice status", error.message)
+                set({error:error.message})
+                return
+            }
+            await get().fetchInvoices() 
+        } catch (err: any) {
+            console.error("🔴 updateProjectStatus : failed", err.message)
+        } finally {
+            set({ invoiceLoading: false });
+        }
+    },
+
+    deleteInvoice: async (id) => {
+        set({ invoiceLoading: true, error: null })
+    
+        try {
+            
+            const { error: deleteError } = await supabase
+                .from("invoices")
+                .delete()
+                .eq("id", id)
+    
+            if (deleteError) {
+                console.error("Failed to delete Invoice:", deleteError.message)
+                set({ error: deleteError.message })
+                toast.error(deleteError.message)
+                return
+            }
+    
+            // 3. Refresh deliverables
+            await get().fetchInvoices()
+    
+            toast.success("Invoice deleted successfully")
+    
+        } catch (err: any) {
+            console.error("deleteInvoice failed:", err.message)
+            set({ error: err.message })
+            toast.error(err.message)
+        } finally {
+            set({ invoiceLoading: false })
+        }
+    },
+    
     setInvoiceFormData: (data) => set((s) => ({ invoiceFormData: { ...s.invoiceFormData, ...data } })),
 
     addLineItem: () => set((s) => ({

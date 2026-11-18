@@ -40,51 +40,77 @@ const Invoices = () => {
 
     const selectedInvoice = invoices.find((i) => i.id === selectedId) ?? invoices[0] ?? null
 
-    const stats = [
-    {
-        label: "Outstanding",
-        value: "$450.00",
-        sub: "1 awaiting payment",
-        icon: Receipt,
-        iconClass: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
-    },
-    {
-        label: "Overdue",
-        value: "$450.00",
-        sub: "1 invoice",
-        icon: AlarmClock,
-        iconClass: "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300",
-        valueClass: "text-red-600 dark:text-red-400",
-    },
-    {
-        label: "Paid",
-        value: "$800.00",
-        sub: "1 invoice",
-        icon: CircleCheck,
-        iconClass: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300",
-    },
-    {
-        label: "Drafts",
-        value: "$2,400.00",
-        sub: "1 ready to send",
-        icon: PencilLine,
-        iconClass: "bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300",
-    },
-    ];
-    const categories = [
-        {label:"All", length:1},
-        {label:"Draft", length: 2},
-        {label:"Sent", length: 2},
-        {label:"Overdue", length: 2},
-        {label:"Paid", length: 2},
-        {label:"Cancelled", length: 2},
-        
-    ]
+   
     const [ activeCategory, setActiveCategory ] = useState("All");
 
     const filteredInvoices = invoices?.filter(
         (i) => activeCategory === "All" || i.status === activeCategory
     )
+
+    const list = invoices ?? []
+
+    const outstanding_invoices = list.filter((i) => i.status === "Sent" || i.status === "Overdue")
+    const overdue_invoices     = list.filter((i) => i.status === "Overdue")
+    const paid_invoices        = list.filter((i) => i.status === "Paid")
+    const draft_invoices       = list.filter((i) => i.status === "Draft")
+    const sent_invoices       = list.filter((i) => i.status === "Sent")
+    const cancelled_invoices       = list.filter((i) => i.status === "Cancelled")
+
+    const sum = (items: typeof list) => items.reduce((n, i) => n + i.total, 0)
+
+    const outstanding = sum(outstanding_invoices)
+    const overdue     = sum(overdue_invoices)
+    const paid        = sum(paid_invoices)
+    const drafts      = sum(draft_invoices)
+
+    const money = (n: number) =>
+        `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
+    const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? "" : "s"}`
+
+    const stats = [
+        {
+            label: "Outstanding",
+            value: money(outstanding),
+            sub: `${outstanding_invoices.length} awaiting payment`,
+            icon: Receipt,
+            iconClass: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
+        },
+        {
+            label: "Overdue",
+            value: money(overdue),
+            sub: plural(overdue_invoices.length, "invoice"),
+            icon: AlarmClock,
+            iconClass: overdue_invoices.length
+                ? "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300"
+                : "bg-neutral-100 text-neutral-700 dark:bg-white/10 dark:text-neutral-300",
+            valueClass: overdue_invoices.length ? "text-red-600 dark:text-red-400" : "",
+        },
+        {
+            label: "Paid",
+            value: money(paid),
+            sub: plural(paid_invoices.length, "invoice"),
+            icon: CircleCheck,
+            iconClass: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300",
+        },
+        {
+            label: "Drafts",
+            value: money(drafts),
+            sub: `${draft_invoices.length} ready to send`,
+            icon: PencilLine,
+            iconClass: "bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300",
+        },
+    ]
+
+    const categories = [
+        {label:"All", length: invoices.length },
+        {label:"Draft", length: draft_invoices.length },
+        {label:"Sent", length: sent_invoices.length },
+        {label:"Overdue", length: overdue_invoices.length },
+        {label:"Paid", length: paid_invoices.length },
+        {label:"Cancelled", length: cancelled_invoices.length },
+        
+    ]
 
     useEffect(() => {
         fetchInvoices()
