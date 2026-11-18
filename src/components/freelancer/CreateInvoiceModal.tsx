@@ -11,7 +11,7 @@ interface modalProps {
 const CreateInvoiceModal = ({ onClose }: modalProps) => {
 
     const { projects, fetchProjects } = useProjectStore()
-    const { invoiceFormData, invoiceLoading, setInvoiceFormData, addLineItem, updateLineItem, removeLineItem, saveAsDraft, resetInvoiceForm } = useInvoiceStore()
+    const { invoiceFormData, invoiceLoading, setInvoiceFormData, addLineItem, updateLineItem, removeLineItem, saveAsDraft, createAndSend ,resetInvoiceForm } = useInvoiceStore()
     const [clientName, setClientName ] = useState("")
     const [projectId, setProjectId ] = useState("")
     const [clientId, setClientId ] = useState("")
@@ -56,6 +56,32 @@ const CreateInvoiceModal = ({ onClose }: modalProps) => {
             resetInvoiceForm()
         } catch (err) {
             console.error("Error in handleSaveAsDraft", err);
+        }
+    }
+
+    const handleCreateAndSend = async () => {
+        if (!invoiceFormData.project_id?.trim()) return toast.error("Choose a Project");
+        if (invoiceFormData.items.length == 0) return toast.error("Add at Least One Line Item");
+        for (const [index, item] of invoiceFormData.items.entries()) {
+            const line = index + 1
+            const price = Number(item.price)
+        
+            if (!item.description.trim()) {
+                return toast.error(`Line ${line}: add a description`)
+            }
+            if (item.price === "" || isNaN(price) || price <= 0) {
+                return toast.error(`Line ${line}: enter a valid price`)
+            }
+        }
+        
+        try {
+            await createAndSend(invoiceFormData, projectId, total, clientId)
+            const err = useInvoiceStore.getState().error
+            if (err) return toast.error(err)
+            onClose()
+            resetInvoiceForm()
+        } catch (err) {
+            console.error("Error in handleCreateAndSend", err);
         }
     }
 
@@ -137,7 +163,7 @@ const CreateInvoiceModal = ({ onClose }: modalProps) => {
                         <button onClick={handleSaveAsDraft} disabled={invoiceLoading} className="inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-200 dark:border-white/10 px-3.5 py-2 text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-white/5 transition disabled:opacity-50" >Save as Draft
                         </button>
                         
-                        <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 text-white dark:bg-[#00ed64] dark:text-[#001e2b] px-3.5 py-2 text-sm font-semibold shadow-sm hover:bg-emerald-500 transition" ><Send className="w-4 h-4" /> Create &amp; Send</button></div>
+                        <button  onClick={handleCreateAndSend} disabled={invoiceLoading} className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 text-white dark:bg-[#00ed64] dark:text-[#001e2b] px-3.5 py-2 text-sm font-semibold shadow-sm hover:bg-emerald-500 transition disabled:opacity-50" ><Send className="w-4 h-4" /> Create &amp; Send</button></div>
                 </div>
             </div>
         </div>
