@@ -10,6 +10,8 @@ import Clients from "./pages/freelancer/Clients";
 import Projects from "./pages/freelancer/Projects";
 import ProjectDetails from "./pages/freelancer/ProjectDetails";
 import Invoices from "./pages/freelancer/Invoices";
+import Notifications from "./pages/freelancer/Notifications";
+import Settings from "./pages/freelancer/Settings ";
 
 interface RouteProps {
   children: React.ReactNode;
@@ -84,6 +86,8 @@ function App() {
         <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
         <Route path="/projects/:id" element={<ProjectDetails />} />
         <Route path="/invoices" element={<Invoices />} />
+        <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
 
         {/* <Route path="/" element={<HomePage />} />

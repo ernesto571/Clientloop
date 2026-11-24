@@ -26,7 +26,7 @@ export default function Topbar ({label} : props) {
 
                     <button className="relative h-9 w-9 grid place-items-center rounded-lg hover:bg-neutral-200/60 dark:hover:bg-white/10" aria-label="Notifications" > <Bell className="w-4 h-4" /> </button>
 
-                    <button onClick={handleToggle} aria-label="Toggle Theme" className="grid h-9 w-9 place-items-center rounded-full bg-tint transition active:scale-95">
+                    <button onClick={handleToggle} aria-label="Toggle Theme" className="h-9 w-9 grid place-items-center rounded-lg hover:bg-neutral-200/60 dark:hover:bg-white/10 ">
                         <Moon className="h-4 w-4 dark:hidden" />
                         <Sun className="hidden h-4 w-4 dark:block" />
                     </button>

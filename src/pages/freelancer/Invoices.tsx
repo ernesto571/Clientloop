@@ -38,14 +38,14 @@ const Invoices = () => {
     const [ modal, setModal] = useState("")
     const [selectedId, setSelectedId] = useState<string | null>(null)
 
-    const selectedInvoice = invoices.find((i) => i.id === selectedId) ?? invoices[0] ?? null
-
-   
     const [ activeCategory, setActiveCategory ] = useState("All");
 
     const filteredInvoices = invoices?.filter(
         (i) => activeCategory === "All" || i.status === activeCategory
     )
+
+    const selectedInvoice = filteredInvoices.find((i) => i.id === selectedId) ?? filteredInvoices[0] ?? null
+    const isOpen = filteredInvoices.some((i) => i.id === selectedId)
 
     const list = invoices ?? []
 
@@ -151,7 +151,7 @@ const Invoices = () => {
 
                         <div className="flex gap-1.5 overflow-x-auto pb-1 sm:pb-0 mb-3" >
                             { categories.map((c) => (
-                                <button key={c.label} onClick={() => setActiveCategory(c.label)} className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold  ${ activeCategory === c.label ? "bg-emerald-600 text-white dark:bg-[#00ed64] dark:text-[#001e2b]" : "border border-neutral-200 dark:border-white/10 text-neutral-500 dark:text-neutral-400" } `} >
+                                <button key={c.label} onClick={() => { setActiveCategory(c.label); setSelectedId(null) }} className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-semibold  ${ activeCategory === c.label ? "bg-emerald-600 text-white dark:bg-[#00ed64] dark:text-[#001e2b]" : "border border-neutral-200 dark:border-white/10 text-neutral-500 dark:text-neutral-400" } `} >
                                     { c.label }
                                     <span className="opacity-70 pl-2">{c.length} </span>
                                 </button>
@@ -160,7 +160,7 @@ const Invoices = () => {
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-4 items-start" >
-                            <div className="min-w-0 " >
+                            <div className={`min-w-0 ${isOpen ? "hidden lg:block" : ""}`} >
                                 <div className="rounded-xl border border-neutral-200 dark:border-white/10 bg-white dark:bg-neutral-900 shadow-sm !p-0 overflow-hidden" >
                                     <div className="flex justify-between px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 border-b border-neutral-200 dark:border-white/10"><span>Invoice</span><span>Total · Issued</span></div>
                                     
@@ -168,7 +168,7 @@ const Invoices = () => {
                                         { filteredInvoices.map((i) => {
                                             const { icon: Icon, className } = STATUS_STYLES[i.status as InvoiceStatus]
                                             return (
-                                                <button onClick={() => setSelectedId(i.id)} key={i.id} className={`w-full text-left flex items-center gap-3 px-4 py-3.5 border-b last:border-0 border-neutral-200 dark:border-white/10 transition dark:hover:bg-white/[0.03] ${selectedInvoice === i ? " bg-emerald-50 dark:bg-[#00ed64]/[0.06] shadow-[inset_3px_0_0_#059669] dark:shadow-[inset_3px_0_0_#00ed64]" : " hover:bg-neutral-50"}`} >
+                                                <button onClick={() => { setSelectedId(i.id); window.scrollTo(0, 0) }} key={i.id} className={`w-full text-left flex items-center gap-3 px-4 py-3.5 border-b last:border-0 border-neutral-200 dark:border-white/10 transition dark:hover:bg-white/[0.03] ${selectedInvoice === i ? " bg-emerald-50 dark:bg-[#00ed64]/[0.06] shadow-[inset_3px_0_0_#059669] dark:shadow-[inset_3px_0_0_#00ed64]" : " hover:bg-neutral-50"}`} >
                                                     <span className={`h-10 w-10 shrink-0 rounded-lg grid place-items-center ${className}`}>
                                                         <Icon className="h-4 w-4" />
                                                     </span>
@@ -191,10 +191,11 @@ const Invoices = () => {
 
                                 </div>
                             </div>
-                            <div>
+                            <div className={`min-w-0 lg:sticky lg:top-20 ${isOpen ? "" : "hidden lg:block"}`} >
                                 {selectedInvoice && (
                                     <InvoiceTab 
                                         invoice={selectedInvoice} 
+                                        onBack={() => setSelectedId(null)}
                                     />
                                 )}
                             </div>
