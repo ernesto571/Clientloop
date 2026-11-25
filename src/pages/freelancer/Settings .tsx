@@ -4,7 +4,8 @@ import { useEffect, useState } from "react"
 import { User, Image, Bell, SunMoon, CreditCard, Shield, Sun, Moon, LogOut, Trash2 } from "lucide-react"
 import { useProfileStore } from "../../store/ProfileStore"
 import toast from "react-hot-toast"
-import { useAuthStore } from "../../store/AuthStore"
+import { supabase } from "../../lib/supabase-client"
+import { useNavigate } from "react-router-dom"
 
 const sections = [
     { id: "s-profile", label: "Profile", icon: User },
@@ -17,8 +18,8 @@ const sections = [
 
 const Settings  = () => {
 
+    const navigate = useNavigate()
     const { profile, profileFormData, setProfileFormData, fetchProfile, updateProfile, deleteAccount, profileLoading } = useProfileStore()
-    const { logout } = useAuthStore()
     const [active, setActive] = useState("s-profile")
 
     const displayName = profileFormData?.business_name?.trim() || profileFormData?.name?.trim() || ""
@@ -59,6 +60,17 @@ const Settings  = () => {
             console.error("Error in handleProfileUpdate", err);
         }
 
+    };
+
+    const handleLogout = async () => {
+        const { error } = await supabase.auth.signOut();
+
+        if (error) {
+            console.error("Logout failed:", error.message);
+            return;
+        }
+        navigate("/")
+        console.log("Logged out successfully");
     };
 
     const [dark, setDark] = useState(() => localStorage.theme ? localStorage.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches)
@@ -169,7 +181,7 @@ const Settings  = () => {
                                             <p className="text-sm font-semibold">Sign Out</p>
                                             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">You’ll return to the landing page.</p>
                                         </div>
-                                        <button onClick={() => logout} type="button" className="inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-200 dark:border-white/10 px-3.5 py-2 text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-white/5 transition"><LogOut className="w-4 h-4" /> Sign Out</button>
+                                        <button onClick={ handleLogout} type="button" className="inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-200 dark:border-white/10 px-3.5 py-2 text-sm font-semibold hover:bg-neutral-50 dark:hover:bg-white/5 transition"><LogOut className="w-4 h-4" /> Sign Out</button>
                                     </div>
 
                                     <div className="mt-4 rounded-lg border border-red-200 dark:border-red-500/25 bg-red-50/60 dark:bg-red-500/[0.06] p-4 flex flex-wrap items-center justify-between gap-3">

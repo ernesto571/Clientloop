@@ -1,108 +1,128 @@
-import React from "react";
+import React, { useState } from "react";
 import { Routes, Route, Navigate} from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import HomePage from "./pages/Homepage";
 import { useEffect } from "react";
 import { supabase } from "./lib/supabase-client";
-import { useAuthStore } from "./store/AuthStore";
 import Overview from "./pages/freelancer/Overview";
 import Clients from "./pages/freelancer/Clients";
 import Projects from "./pages/freelancer/Projects";
 import ProjectDetails from "./pages/freelancer/ProjectDetails";
 import Invoices from "./pages/freelancer/Invoices";
 import Notifications from "./pages/freelancer/Notifications";
+import AcceptInvite from "./pages/AcceptInvite";
+import AuthListener from "./hooks/AuthListener";
 import Settings from "./pages/freelancer/Settings ";
+import ClientProject from "./pages/client/ClientProject";
 
-interface RouteProps {
-  children: React.ReactNode;
+interface Props {
+  children: React.ReactNode
+  role: "freelancer" | "client"
 }
 
-const ProtectedRoute: React.FC<RouteProps> = ({ children }) => {
-  const { session, isLoading } = useAuthStore();
+const RoleRoute = ({ children, role }: Props) => {
+  const [checking, setChecking] = useState(true)
+  const [redirect, setRedirect] = useState<string | null>(null)
 
-  if (isLoading) return null;
-  if (!session) {
-      return <Navigate to="/" replace />;
-  }
+  useEffect(() => {
+    const check = async () => {
+      // get the session directly from Supabase
+      const { data: { session } } = await supabase.auth.getSession()
 
-  return <>{children}</>;
-};
+      if (!session) {
+        setRedirect("/")
+        setChecking(false)
+        return
+      }
+
+      const { data: user, error } = await supabase.from("users").select("role").eq("id", session.user.id).single()
+      if (error) console.error("Role check failed:", error.message)
+
+      if (!user?.role) {
+        setRedirect("/")
+      } else if (user.role !== role) {
+        setRedirect(user.role === "client" ? "/client/project" : "/overview")
+      } else if (role === "client") {
+        const { data: clients } = await supabase.from("clients").select("status").eq("user_id", session.user.id)
+        const isActive = !!clients?.some((c) => c.status === "Active")
+        if (!isActive) setRedirect("/client/accept-invite")
+      }
+
+      setChecking(false)
+    }
+
+    check()
+  }, [role])
+
+  if (checking) return null
+  if (redirect) return <Navigate to={redirect} replace />
+
+  return <>{children}</>
+}
+
+// For public pages (homepage, client sign in):
+// signed-out visitors see the page, signed-in users go to their own area.
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const [checking, setChecking] = useState(true)
+  const [redirect, setRedirect] = useState<string | null>(null)
+
+  useEffect(() => {
+    const check = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (!session) {
+        setChecking(false)
+        return
+      }
+
+      const { data: user, error } = await supabase.from("users").select("role").eq("id", session.user.id).single()
+      if (error) console.error("Role check failed:", error.message)
+
+      if (user?.role === "freelancer") {
+        setRedirect("/overview")
+      } else if (user?.role === "client") {
+        const { data: clients } = await supabase.from("clients").select("status").eq("user_id", session.user.id)
+        const isActive = !!clients?.some((c) => c.status === "Active")
+        setRedirect(isActive ? "/client/project" : "/client/accept-invite")
+      }
+
+      setChecking(false)
+    }
+
+    check()
+  }, [])
+
+  if (checking) return null
+  if (redirect) return <Navigate to={redirect} replace />
+
+  return <>{children}</>
+}
+
+export const FreelancerRoute = ({ children }: { children: React.ReactNode }) => <RoleRoute role="freelancer">{children}</RoleRoute>
+export const ClientRoute = ({ children }: { children: React.ReactNode }) => <RoleRoute role="client">{children}</RoleRoute>
 
 function App() {
 
-//   const { fetchSession } = useAuthStore()
-//   const { fetchWishlistItems } = useWishlistStore()
-//   const { fetchCartItems } = useCartStore()
-//   const { fetchAllProducts } = useProductStore()
-
-//   useEffect(() => {
-//     const { data: authListener } = supabase.auth.onAuthStateChange(
-//       (_event, session) => {
-//           useAuthStore.setState({ session });
-  
-//           if (session) {
-//               setTimeout(() => {
-//                   void useCartStore.getState().migrateCartToDatabase();
-//                   void useWishlistStore.getState().migrateWishlistToDatabase();
-//               }, 0);
-//           }
-//       }
-//     );
-
-//     const initializeApp = async () => {
-//         console.log("Fetching session...");
-
-//         await fetchSession();
-
-//         await fetchAllProducts()
-
-//         console.log("Fetching wishlist...");
-//         await fetchWishlistItems();
-
-//         console.log("Fetching cart...");
-//         await fetchCartItems();
-//     };
-
-//     initializeApp();
-
-//     return () => {
-//         authListener.subscription.unsubscribe();
-//     };
-// }, []);
-  useEffect(() => {
-      const { data } = supabase.auth.onAuthStateChange((_e, session) => useAuthStore.setState({ session }))
-      return () => data.subscription.unsubscribe()
-  }, [])
-
   return (
     <>
+    <AuthListener />
       <main>
       <Routes>
        
-        {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/overview" element={<ProtectedRoute><Overview /></ProtectedRoute>} />
-        <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
-        <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-        <Route path="/projects/:id" element={<ProjectDetails />} />
-        <Route path="/invoices" element={<Invoices />} />
-        <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/" element={<PublicRoute><HomePage /></PublicRoute>} />
+        <Route path="/client/accept-invite" element={<AcceptInvite />} />
+        <Route path="/overview" element={<FreelancerRoute><Overview /></FreelancerRoute>} />
+        <Route path="/clients" element={<FreelancerRoute><Clients /></FreelancerRoute>} />
+        <Route path="/projects" element={<FreelancerRoute><Projects /></FreelancerRoute>} />
+        <Route path="/projects/:id" element={<FreelancerRoute><ProjectDetails /></FreelancerRoute>} />
+        <Route path="/invoices" element={<FreelancerRoute><Invoices /></FreelancerRoute>} />
+        <Route path="/notifications" element={<FreelancerRoute><Notifications /></FreelancerRoute>} />
+        <Route path="/settings" element={<FreelancerRoute><Settings /></FreelancerRoute>} />
 
+        <Route path="/client/project" element={<ClientRoute><ClientProject /></ClientRoute>} />
 
-        {/* <Route path="/" element={<HomePage />} />
-        <Route path="/sign-up" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/all" element={<AllProducts />} />
-        <Route path="/apparel" element={<Apparel />} />
-        <Route path="/footwear" element={<Footwear />} />
-        <Route path="/accessories" element={<Accessories />} />
-        <Route path="/tech" element={<Tech />} />
-        <Route path="/my-wishlist" element={<Wishlist />} />
-        <Route path="/:slug" element={<ProductDetails />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/successful" element={<Successful />} />
-        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />  */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+
 
       </Routes>
       </main>
