@@ -41,7 +41,7 @@ const RoleRoute = ({ children, role }: Props) => {
       if (!user?.role) {
         setRedirect("/")
       } else if (user.role !== role) {
-        setRedirect(user.role === "client" ? "/client/project" : "/overview")
+        setRedirect(user.role === "client" ? "/client/projects" : "/overview")
       } else if (role === "client") {
         const { data: clients } = await supabase.from("clients").select("status").eq("user_id", session.user.id)
         const isActive = !!clients?.some((c) => c.status === "Active")
@@ -83,7 +83,7 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
       } else if (user?.role === "client") {
         const { data: clients } = await supabase.from("clients").select("status").eq("user_id", session.user.id)
         const isActive = !!clients?.some((c) => c.status === "Active")
-        setRedirect(isActive ? "/client/project" : "/client/accept-invite")
+        setRedirect(isActive ? "/client/projects" : "/client/accept-invite")
       }
 
       setChecking(false)
@@ -119,7 +119,7 @@ function App() {
         <Route path="/notifications" element={<FreelancerRoute><Notifications /></FreelancerRoute>} />
         <Route path="/settings" element={<FreelancerRoute><Settings /></FreelancerRoute>} />
 
-        <Route path="/client/project" element={<ClientRoute><ClientProject /></ClientRoute>} />
+        <Route path="/client/projects" element={<ClientRoute><ClientProject /></ClientRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
 

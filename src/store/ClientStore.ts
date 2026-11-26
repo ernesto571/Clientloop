@@ -15,14 +15,38 @@ export interface ClientFormData {
     email: string
 }
 
+export interface ClientProject {
+    id: string;
+    name: string;
+    status: string;
+    created_at: string;
+    milestones: {
+        id: string;
+        title: string;
+        is_completed: boolean;
+    } []
+}
+
+export interface Deliverable {
+    id: string;
+    title: string;
+    description: string;
+    file_name: string;
+    file_path: string;
+    status: string;
+    client_feedback: string;
+}
+
 interface ClientStore {
     isLoading: boolean
     error: string | null;
     clients: Clients[];
+    clientProjects: ClientProject[];
     clientFormData: ClientFormData
     fetchClients: () => Promise<void>
     inviteClient : (data: ClientFormData) => Promise<void>
     resendInvite: (clientId: string) => Promise<void>
+    fetchClientProject: () => Promise<void>
     setFormData: (data: Partial<ClientFormData>) => void;
 
 }
@@ -37,6 +61,7 @@ export const useClientStore = create<ClientStore>((set, get) => ({
     clients: [],
     clientFormData: initialFormData, 
     error: null,
+    clientProjects: [],
 
     fetchClients: async () => {
         set({isLoading: true})
@@ -91,6 +116,54 @@ export const useClientStore = create<ClientStore>((set, get) => ({
             console.error("🔴 resendInvite : failed", err.message)
         } finally {
             set({ isLoading: false })
+        }
+    },
+
+    fetchClientProject: async () => {
+        set({ isLoading: true, error: null });
+    
+        const session = useAuthStore.getState().session;
+        const userId = session?.user.id;
+    
+        if (!userId) {
+            set({
+                isLoading: false,
+                error: "User not authenticated",
+            });
+            return;
+        }
+    
+        try {
+            const { data, error } = await supabase
+                .from("projects")
+                .select(`
+                    id,
+                    name,
+                    status,
+                    created_at,
+                    milestones (
+                        id,
+                        title,
+                        is_completed
+                    )
+                `)
+                .eq("client_id", userId)
+    
+            if (error) {
+                console.error("Error fetching client projects:", error.message);
+                set({ error: error.message });
+                return;
+            }
+            console.log(data)
+    
+            // @ts-ignore
+            set({ clientProjects: data ?? [] });
+            
+        } catch (err: any) {
+            console.error("fetchProjects failed:", err.message);
+            set({ error: err.message });
+        } finally {
+            set({ isLoading: false });
         }
     },
 
